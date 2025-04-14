@@ -875,7 +875,6 @@ var htmlText = @"
 </html>
 ";
 
-
 var doc = new HtmlDocument();
 doc.LoadHtml(htmlText);
 
@@ -890,31 +889,19 @@ doc.LoadHtml(htmlText);
 value will be in the b tag under value attribute
  */
 
-//step 1: Create rule book based on above
-
-//Dictionary<string, string> rules = new()
-//{
-//    <"rule1","val1">
-//};
-
-// step 2: Get all section tags
-
 string result = "";
 
 // get sections with data-id starting with 92
-var section = doc.DocumentNode.SelectSingleNode("//section[starts-with(@data-id, '92')]");
+var sections = doc.DocumentNode.SelectSingleNode("//section[starts-with(@data-id, '92')]");
 //var sections = doc.DocumentNode.SelectNodes("//section[starts-with(@data-id, '92')]");
 
+//select articles from valid sections ending in 45 
+var articles = sections.SelectSingleNode("//article[substring(@data-class, string-length(@data-class) - 1) = '45']");
 
-//lets work with the first one for now
-var article = section.SelectSingleNode("//article[substring(@data-class, string-length(@data-class) - 1) = '45']");
+//get divs from the valid select elements
+var divs = articles.SelectNodes("//div[contains(@data-tag, '78')]");
 
-// lets work with the first article for now
-
-var divs = article.SelectNodes("//div[contains(@data-tag, '78')]");
-
-// there are two divs in the first ex with first one being the bad one
-
+// loop through each div from the valid divs
 foreach (var div in divs)
 {
     var allBTags = div.SelectNodes(".//b");
@@ -925,13 +912,13 @@ foreach (var div in divs)
             var classes = classAttr.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
             return classes.Contains("ref");
         })
-        .ToList();
+        .ToList(); // has to have an exact match for class ref
     if (validBTags != null && validBTags.Count > 0)
     {
         foreach (var bTag in validBTags)
         {
             var value = bTag.GetAttributeValue("value", null);
-            result += value;
+            result += value; // append it to result value for url
         }
     }
 }
